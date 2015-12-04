@@ -88,4 +88,31 @@ leaflet() %>%
   addLegend(pal=pal, values=values(r), title='Habitats')
 ```
 
+# Create GeoJSON Files 
 
+```{r, eval=FALSE}
+library(rgdal)
+library(dplyr)
+
+gdb = 'H:/AdvancedGIS/lab3/golf.gdb'
+dir = 'H:/AdvancedGIS/lab5/adv-gis/Data'
+
+# iterate through features in geodatabase
+for (fc in ogrListLayers(gdb)){
+  
+  # print paths
+  geo = sprintf('%s/%s.geojson', dir, fc)
+  tmp = tempfile()
+  cat(sprintf('gdb/fc: %s/%s\n  -> tmp: %s\n  -> geo: %s\n', gdb, fc, tmp, geo))
+  
+  # read in feature class and project to geographic
+  sp = readOGR(gdb, fc) %>%
+    spTransform(leaflet:::epsg4326)
+
+  # output to geojson
+  writeOGR(sp, dsn=tmp, layer='dummy', driver='GeoJSON')
+  
+  # move file
+  file.rename(tmp, geo)
+}
+```
