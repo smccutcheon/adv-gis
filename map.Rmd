@@ -1,0 +1,91 @@
+---
+title: "map"
+author: "Alexa Fredston-Hermann and Sarah McCutcheon"
+date: "December 4, 2015"
+output: 
+   html_document:
+      toc: yes
+      number_sections: yes
+---
+
+# Generate Leaflet Map in RStudio
+
+## Create Map of Points
+
+```{r}
+# load packages
+suppressWarnings(suppressPackageStartupMessages({
+  library(leaflet)
+  library(rgdal)
+}))
+
+# set paths
+gdb = 'H:/AdvancedGIS/lab3/golf.gdb'
+
+# read points from geodatabase
+pts = readOGR(gdb, 'pts_tree', verbose=F)
+
+# project points to geographic projection
+pts_gcs = spTransform(pts, leaflet:::epsg4326)
+
+# create map of points
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(data = pts_gcs) 
+```
+
+## Create Map with Popups 
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id)) 
+```
+
+## Change Basemap 
+
+Create map with Stamen-Watercolor basemap 
+
+```{r}
+leaflet() %>%  
+  addProviderTiles('Stamen.Watercolor') %>%
+  addMarkers(data = pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+## Add Lines and Polygons
+
+```{r}
+# read points, lines and polygons from geodatabase
+pts_gcs  = readOGR(gdb, 'pts_tree', verbose=F)    %>% spTransform(leaflet:::epsg4326)
+lns_gcs  = readOGR(gdb, 'lns_cart', verbose=F)    %>% spTransform(leaflet:::epsg4326)
+plys_gcs = readOGR(gdb, 'plys_bunker', verbose=F) %>% spTransform(leaflet:::epsg4326)
+
+# map with lines and polygons
+leaflet() %>%  
+  addProviderTiles('Stamen.Toner') %>%
+  addPolygons(data=plys_gcs, color="yellow", fill=TRUE, fillColor = "yellow", stroke=FALSE, fillOpacity = 1.0) %>%  
+  addPolylines(data=lns_gcs) %>%
+  addMarkers(data=pts_gcs, popup=~sprintf('id: %d', id))
+```
+
+# Create a Raster Map 
+
+```{r}
+library(raster)
+# set path to your final chosen classified image
+tif = 'H:/AdvancedGIS/lab3/images_rect/frame94_convert1_5.tif'
+  
+# read raster, presumably in Web Mercator
+r = raster(tif, crs = leaflet:::epsg3857)
+
+# setup color palette
+pal = colorFactor('Set3', values(r), na.color='transparent')
+
+# map with raster
+leaflet() %>%  
+  addProviderTiles('Stamen.Toner') %>%
+  addRasterImage(r, colors=pal, project=F, opacity=0.8) %>%
+  addLegend(pal=pal, values=values(r), title='Habitats')
+```
+
+
