@@ -93,6 +93,7 @@ leaflet() %>%
 ```{r, eval=FALSE}
 library(rgdal)
 library(dplyr)
+library(leaflet)
 
 gdb = 'H:/AdvancedGIS/lab3/golf.gdb'
 dir = 'H:/AdvancedGIS/lab5/adv-gis/Data'
@@ -116,3 +117,7 @@ for (fc in ogrListLayers(gdb)){
   file.rename(tmp, geo)
 }
 ```
+
+# Embed GeoJSON Map from Github 
+
+<script src="https://embed.github.com/view/geojson/smccutcheon/adv-gis/gh-pages/Data/cart_paths.geojson"></script>
